@@ -1,0 +1,318 @@
+
+ 
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=7" />
+    <title>更多信息</title>
+   <link rel="stylesheet" href="https://js.arcgis.com/3.20/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.20/"></script>
+	
+    <style type="text/css">
+      
+      .infowindow .window .top .right .user .titlebar .title { font-family:Arial,
+ Helvetica, sans-serif; font-weight:bold; font-size:14pt; }
+      
+      .infowindow .window .top .right .user .content { font-style:italic;
+font-size:10pt; }
+    </style>
+    <style>
+    	 .top
+        {
+            width: 100%;
+            height: 80px;
+            
+            border-bottom: 2px solid black;
+        }
+        .top img{
+			margin-top: 20px;
+			margin-right: 50px;
+			margin-left: 20px;
+			
+		}
+    	.right
+        {
+            position: fixed;
+            top: 88px;
+            left: 340px;
+            right: 0;
+            bottom: 0;
+        }
+    	 .left
+        
+        {	
+        	
+        	
+            position: fixed;
+            top: 100px;
+            width: 300px;
+            bottom: 0;
+        }
+        .base{
+        	width: 280px;
+        	height: 60px;
+        	margin-bottom: 20px;
+        	background: #E15748;
+        	border-radius: 10px;
+        	color: white;
+        	text-align: center;
+        	padding: 20px 0;
+        	
+        }
+        .left input[type="button"]:hover{
+        	background: red;
+        	
+        }
+        .left input[type="button"]:active{
+        	background: black;
+        }
+        .left input[type="button"]{
+        	transition: 1s;
+        	  display: block;  
+        	  background: #E15748;
+			    zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */  
+			    *display: inline;  
+			    vertical-align: baseline;  
+			    margin: 0 2px;  
+			    outline: none;  
+			    cursor: pointer;  
+			    text-align: center;  
+			    text-decoration: none;  
+			    font: 14px/100% Arial, Helvetica, sans-serif;  
+			    padding: .5em 2em .55em;  
+			    border-color: #E15748;
+			    -webkit-border-radius: .5em;   
+			    -moz-border-radius: .5em;  
+			    border-radius: .5em;  
+			    color: white;
+			    text-spacing: 2px;
+			    margin: 0 auto;
+			    margin-top: 10px;
+			    
+        }
+        .left input[type="text"]{
+        		appearance: none;
+        		outline:0;
+        		font-size:14px;
+				height:2.7em;
+				border-radius:4px;
+				border:1px solid #c8cccf;
+				color:#6a6f77;			
+        		width: 90%;
+        		height: 40px;
+        		margin: 10px 10px 0;
+        }
+        .top input:nth-of-type(1){
+        	appearance: none;
+        	outline:0;
+        	font-size:14px;
+			height:2.7em;
+			border-radius:4px;
+			border:1px solid #c8cccf;
+			color:#6a6f77;		
+         	cursor: pointer;
+         	transition: 1s;
+        	background: #E15748;
+        	width: 100px;
+        	margin-top: 10px;
+        	margin-left: 50px;
+        	margin-bottom: 10px;
+        	height: 30px;
+        	color: white;
+        	
+        }
+         .top input:nth-of-type(2){
+         	appearance: none;
+        	outline:0;
+        	font-size:14px;
+			height:2.7em;
+			border-radius:4px;
+			border:1px solid #c8cccf;
+			color:#6a6f77;		
+         	cursor: pointer;
+         	transition: 1s;
+        	background: #E15748;
+        	width: 100px;
+        	margin-top: 10px;
+        	margin-left: 50px;
+        	margin-bottom: 10px;
+        	height: 30px;
+        	color: white;
+        }
+        
+        .top input:nth-of-type(1):hover{
+        	background: red;
+        }
+       .top input:nth-of-type(1):active{
+       		background: black;
+       }
+        .top input:nth-of-type(2):hover{
+        	background: red;
+        }
+        .top input:nth-of-type(2):active{
+       		background: black;
+       }
+       .top input{
+       	position: relative;
+       	top: -20px;
+       	left: 400px;
+       }
+    </style>
+    <script type="text/javascript">
+    
+
+    	
+      dojo.require("esri.map");
+	  dojo.require("esri.tasks.query");
+      var queryTask, query;
+      var map;
+      var mylayer;
+      function init() {
+      	queryTask = new esri.tasks.QueryTask
+        ("https://localhost:6443/arcgis/rest/services/气象站3/MapServer/0");
+        query = new esri.tasks.Query();
+        query.returnGeometry = false;
+        query.outFields = ["温度","降水量"];
+        map = new esri.Map("map");
+      	 var layersLoaded = 0;  //加载的所有层
+        var loading = dojo.byId("loadingImg");  
+        
+        mylayer= new esri.layers.ArcGISTiledMapServiceLayer("https://localhost:6443/arcgis/rest/services/气象站4/MapServer");
+         dojo.connect(map, "onExtentChange", showExtent);
+         dojo.connect(map, "onLoad", function() {
+          //地图加载后，监听到移动鼠标拖动事件
+        dojo.connect(map, "onMouseMove", showCoordinates);
+        dojo.connect(map, "onMouseDrag", showCoordinates);
+        });
+        dojo.connect(map,"onLoad", function(map) {map.infoWindow.resize(250, 100);} );
+        map.addLayer(mylayer);
+        dojo.connect(map, "onClick", addPoint);
+        
+        dojo.connect(mylayer, "onUpdate", hideLoading);
+        function showLoading() {
+          esri.show(loading);
+          map.disableMapNavigation();
+          map.hideZoomSlider();
+        }
+
+        function hideLoading() {
+          layersLoaded++;
+          if (layersLoaded === map.layerIds.length) {
+            esri.hide(loading);
+            map.enableMapNavigation();
+            map.showZoomSlider();
+            layersLoaded = 0;
+          }
+        }
+      }
+       function execute(stateName) {
+        query.text = stateName;
+        //执行查询
+        queryTask.execute(query,showResults);
+      }
+
+      function showResults(results) {
+        var s = "";
+        for (var i=0, il=results.features.length; i<il; i++) {
+          var featureAttributes = results.features[i].attributes;
+          for (att in featureAttributes) {
+            s = s + "<b>" + att + ":</b>  " + featureAttributes[att] + "<br />";
+          }
+        }
+        dojo.byId("info").innerHTML = s;
+      }
+      function showCoordinates(evt) {
+        //从事件中得到mapPoint
+        var mp = evt.mapPoint;
+        //显示鼠标坐标
+        dojo.byId("Coordinfo").innerHTML = '经度是:'+mp.x + '</br>'+"维度是:" + mp.y;
+      }
+		 function showExtent(extent) {
+        var s = "";
+        s = "图框X轴最小值: "+ extent.xmin + "</br>"
+           +"图框Y轴最小值: " + extent.ymin + "</br>"
+           +"图框X轴最大值: " + extent.xmax + "</br>"
+           +"图框Y轴最大小值: " + extent.ymax;
+        dojo.byId("Extentdinfo").innerHTML = s;
+        
+      }
+      function addPoint(evt) {
+        map.infoWindow.setTitle("Coordinates");
+        map.infoWindow.setContent("纬度: " + evt.mapPoint.y + "<br />经度:  " + evt.mapPoint.x);
+        map.infoWindow.show(evt.screenPoint,map.getInfoWindowAnchor(evt.screenPoint));
+      }
+      function getMapLayers() {
+        for (var j=0, jl=map.layerIds.length; j<jl; j++) {
+          var currentLayer = map.getLayer(map.layerIds[j]);
+          alert("id: " + currentLayer.id + ", visible: " + currentLayer.visible + ",opacity: " + currentLayer.opacity);
+        }
+      }
+
+      function getSr() {
+        alert("Spatial Reference WKID: " + map.spatialReference.wkid);
+      }
+
+      function getScales() {
+        var tileInfo = mylayer.tileInfo;
+        var scales = "";
+        for (var j=0, jl=tileInfo.lods.length; j<jl; j++) {
+          var level = tileInfo.lods[j].level;
+          var scale = tileInfo.lods[j].scale;
+          var resolution = tileInfo.lods[j].resolution;
+
+          scales = scales + "level: " + level + ", scale: " + scale + ", resolution: " + resolution + "\n";
+        }
+        alert(scales);
+      }
+
+      function getMapWidthHeight() {
+        alert("Width = " + map.width + "; Height = " + map.height);
+      }
+      dojo.addOnLoad(init);
+      
+    </script>
+  </head>
+  <body class="tundra">
+  	 <div class="top">
+    	<img src="img/weather_snow_48px_563274_easyicon.net.png" />
+    	<img src="img/weather_sun_48px_563275_easyicon.net.png" />
+    	<img src="img/weather_rain_48px_563273_easyicon.net.png" />
+    	<img src="img/weather_snow_48px_563274_easyicon.net.png" />
+    	<input id="header" type="button" value="首页" />
+    	
+   		<input id="JCXX" type="button" value="空间查询" />
+   		<script>
+   			var btn1 = document.getElementById('header');
+   			var btn2 = document.getElementById('JCXX');
+   			
+   			btn1.onclick = function(){
+   				window.open("WebGis2.html",'_self');
+   			}
+   			btn2.onclick = function(){
+   				
+   				window.open('空间查询.html');
+   			}
+   		</script>
+    </div>
+    <div class="right" id="map" style="width:1024px; height:580px; border:1px solid #000;">
+    	 <img id="loadingImg" src="img/preloader-w8-cycle-black.gif" style="position:absolute; left:512px; top:256px; z-index:100;" />
+    </div>
+    <div class="left">
+    	<div id="Coordinfo" class="base" style="line-height: 30px;" ></div>
+    	<div id="Extentdinfo" class="base" style="line-height: 18px;"></div>
+    	<div style="border-bottom: 2px dashed #E15748;width: 330px;"></div>
+    	<input type="button" value="所有图层" onclick="getMapLayers()" />
+    	<input type="button" value="空间参考" onclick="getSr()" />
+    	<input type="button" value="比例级别" onclick="getScales()" />
+    	<input type="button" value="地图的宽度高度" onclick="getMapWidthHeight()" />
+    	<span style="font-size: 12px;color: #CC0000; margin-left: 50px;">搜索站台名(大写拼音 比如 FUZHOU)</span>
+    	<input type="text" id="stateName" value="BEIHAI" />
+    	<input type="button" value="Get Details" onclick="execute(dojo.byId('stateName').value);" />
+    	<div id="info"></div>
+    </div>
+   
+    
+
+  </body>
+</html>

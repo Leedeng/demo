@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>空间查询</title>
+        <link rel="stylesheet" href="https://js.arcgis.com/3.20/esri/css/esri.css">
+    <script src="https://js.arcgis.com/3.20/"></script>
+	<style>
+        .MapClass{
+            width:80%;
+            height:580px;
+            border:1px solid #000;
+        }
+          .top
+        {
+            width: 100%;
+            height: 80px;
+            
+            border-bottom: 2px solid black;
+        }
+		.top img{
+			margin-top: 20px;
+			margin-right: 50px;
+			margin-left: 20px;
+			
+		}
+		.left
+        
+        {	
+        	
+        	
+            position: fixed;
+            top: 80px;
+            width: 260px;
+            bottom: 0;
+           
+        }
+        .right
+        {
+            position: fixed;
+            top: 88px;
+            left: 270px;
+            right: 0;
+            bottom: 0;
+        }
+        .left input[type="button"]:hover{
+        	background: red;
+        	
+        }
+        .left input[type="button"]:active{
+        	background: black;
+        }
+        .left input[type="button"]{
+        	transition: 1s;
+        	  display: block;  
+        	  background: #E15748;
+			    zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */  
+			    *display: inline;  
+			    vertical-align: baseline;  
+			    margin: 0 2px;  
+			    outline: none;  
+			    cursor: pointer;  
+			    text-align: center;  
+			    text-decoration: none;  
+			    font: 14px/100% Arial, Helvetica, sans-serif;  
+			    padding: .5em 2em .55em;  
+			    border-color: #E15748;
+			    -webkit-border-radius: .5em;   
+			    -moz-border-radius: .5em;  
+			    border-radius: .5em;  
+			    color: white;
+			    text-spacing: 2px;
+			    margin: 0 auto;
+			    margin-top: 40px;
+			    
+        }
+        #divShowResult{
+        	appearance: none;
+        	outline:0;
+        	font-size:14px;
+			height:2.7em;
+			border-radius:4px;
+			border:1px solid #c8cccf;
+			color:#6a6f77;
+			width: 90%;
+        	height: 40px;
+        	margin: 10px 10px 0;		
+        }
+       .top input:nth-of-type(1){
+        	appearance: none;
+        	outline:0;
+        	font-size:14px;
+			height:2.7em;
+			border-radius:4px;
+			border:1px solid #c8cccf;
+			color:#6a6f77;		
+         	cursor: pointer;
+         	transition: 1s;
+        	background: #E15748;
+        	width: 100px;
+        	margin-top: 10px;
+        	margin-left: 50px;
+        	margin-bottom: 10px;
+        	height: 30px;
+        	color: white;
+        	
+        }
+         .top input:nth-of-type(2){
+         	appearance: none;
+        	outline:0;
+        	font-size:14px;
+			height:2.7em;
+			border-radius:4px;
+			border:1px solid #c8cccf;
+			color:#6a6f77;		
+         	cursor: pointer;
+         	transition: 1s;
+        	background: #E15748;
+        	width: 100px;
+        	margin-top: 10px;
+        	margin-left: 50px;
+        	margin-bottom: 10px;
+        	height: 30px;
+        	color: white;
+        }
+        
+        .top input:nth-of-type(1):hover{
+        	background: red;
+        }
+       .top input:nth-of-type(1):active{
+       		background: black;
+       }
+        .top input:nth-of-type(2):hover{
+        	background: red;
+        }
+        .top input:nth-of-type(2):active{
+       		background: black;
+       }
+       .top input{
+       	position: relative;
+       	top: -20px;
+       	left: 400px;
+       }
+    </style>
+    <script type="text/javascript">
+
+        require(["esri/map",
+            "esri/layers/ArcGISDynamicMapServiceLayer",
+            "dojo/dom",
+            "dojo/on",
+            "esri/tasks/QueryTask",
+            "esri/toolbars/draw",
+            "esri/tasks/query",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/symbols/SimpleFillSymbol",
+            "esri/graphic",
+            "dojo/domReady!"],
+            function (Map, ArcGISDynamicMapServiceLayer, dom, on,
+            QueryTask, Draw, Query,
+            SimpleLineSymbol, SimpleFillSymbol, Graphic) {
+                var map = new Map("mapdiv");
+                var layer = new ArcGISDynamicMapServiceLayer
+                ("https://localhost:6443/arcgis/rest/services/气象站3/MapServer");
+                map.addLayer(layer)
+                //定义一个绘图工具
+                var toolBar = new Draw(map);
+                //给button绑定事件
+                on(dom.byId("Btn"), "click", function () {
+                    //激活绘图工具，我要绘制一个面图形
+                    toolBar.activate(Draw.POLYGON);
+                })
+                on(toolBar, "draw-complete", function (result) {
+                    //获得绘图得到的面
+                    var geometry = result.geometry;
+                    //关闭绘图工具
+                    toolBar.deactivate();
+                    queryGraphic(geometry);
+                });
+
+                function queryGraphic(geometry) {
+                    //创建查询对象，注意：服务的后面有一个编号，代表对那一个图层进行查询
+                    var queryTask = new QueryTask("https://localhost:6443/arcgis/rest/services/气象站3/MapServer/0");
+                    //创建查询参数对象
+                    var query = new Query();
+                    //空间查询的几何对象
+                    query.geometry = geometry;
+                    //服务器给我们返回的字段信息，*代表返回所有字段
+                    query.outFields = ["*"];
+                    //空间参考信息
+                    query.outSpatialReference = map.spatialReference;
+                    //查询的标准，此处代表和geometry相交的图形都要返回
+                    query.spatialRelationship = Query.SPATIAL_REL_INTERSECTS;
+                    //是否返回几何信息
+                    query.returnGeometry = true;
+                    //执行空间查询
+                    queryTask.execute(query, showQueryResult);
+                }
+
+                function showQueryResult(queryResult) {
+                    //创建线符号
+                    var lineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASH, new dojo.Color([255, 0, 0]), 3);
+                    //创建面符号
+                    var fill = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, lineSymbol);
+                    if (queryResult.features.length == 0) {
+                        dom.byId("divShowResult").innerHTML = "";
+                        return;
+                    }
+                    var htmls = "";
+                    if (queryResult.features.length >= 1) {
+                        htmls = htmls + "<table style=\"width: 100%\">";
+                        htmls = htmls + "<tr><td>名称</td></tr>";
+                        for (var i = 0; i < queryResult.features.length; i++) {
+                            //得到graphic
+                            var graphic = queryResult.features[i];
+                            //给图形赋予符号
+                            graphic.setSymbol(fill);
+                            //添加到地图从而实现高亮效果
+                            map.graphics.add(graphic);
+                            //获得教学楼的名称信息，此处应和shp的属性表对应
+                            var ptName = graphic.attributes["台站名"];
+                            if (i % 2 == 0)
+                                htmls = htmls + "<tr>";
+                            else
+                                htmls = htmls + "<tr bgcolor=\"#F0F0F0\">";
+                            htmls = htmls + "<td><span>" + ptName + "</span></td>";
+                            htmls = htmls + "</tr>";
+                        }
+                        htmls = htmls + "</table>";
+                        //将教学楼的名称信息和divShowResult绑定
+                        dom.byId("divShowResult").innerHTML = htmls;
+                    }
+                }
+
+
+
+
+            });
+
+
+    </script>
+</head>
+<body>
+	 <div class="top">
+    	<img src="img/weather_snow_48px_563274_easyicon.net.png" />
+    	<img src="img/weather_sun_48px_563275_easyicon.net.png" />
+    	<img src="img/weather_rain_48px_563273_easyicon.net.png" />
+    	<img src="img/weather_snow_48px_563274_easyicon.net.png" />
+    	<input id="header" type="button" value="首页" />
+   		<input id="JCXX" type="button" value="基础信息" />
+   		<script>
+   			var btn1 = document.getElementById('header');
+   			var btn2 = document.getElementById('JCXX');
+   			
+   			btn1.onclick = function(){
+   				window.open("WebGis2.html",'_self');
+   			}
+   			btn2.onclick = function(){
+   				
+   				window.open('WebGis.html');
+   			}
+   		</script>
+    </div>
+    <div id="mapdiv" class="MapClass right"></div>
+    <div class="left">
+    	<input type="button" value="空间查询" id="Btn"/>
+    	<div id="divShowResult"></div>
+    </div>
+</body>
+</html>
