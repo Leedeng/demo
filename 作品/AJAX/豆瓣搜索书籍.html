@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<style type="text/css">
+		#q{
+			width: 300px;
+			height: 30px;
+			padding: 5px;
+			border: 1px solid #f90;
+			font-size: 16px;
+		}
+		dl{
+			border-bottom: 1px dashed #000000;
+		}
+		dt{
+			font-weight: bold;
+		}
+		#page a{
+			display: block;
+			float: left;
+			margin-right: 10px;
+		}
+		
+	</style>
+	
+	<script>
+function fn1(data) {
+	var oMsg = document.getElementById('msg');
+	var oList = document.getElementById('list');
+	var oPage = document.getElementById('page');
+	var pagenumeber = Math.ceil(data['opensearch:totalResults'].$t/10);
+	var oQ = document.getElementById('q');
+	oMsg.innerHTML = data.title.$t+':'+data['opensearch:totalResults'].$t;
+	
+	var aEntry = data.entry;
+	var html = '';
+	for (var i=0; i<aEntry.length; i++) {
+		
+		html += '<dl><dt>'+ aEntry[i].title.$t +'</dt><dd><img src="'+ aEntry[i].link[2]['@href'] +'" /></dd></dl>';
+		
+	}
+	
+	oList.innerHTML = html;
+	
+	var html1 = '';
+	for(var i=1;i<pagenumeber;i++){
+		html1+='<a href="javascript:;">'+i+'</a>';
+	}
+	oPage.innerHTML = html1;
+	var aPage = oPage.getElementsByTagName('a');
+	for(var i=1;i<aPage.length;i++){  
+				 aPage[i].onclick=(function(i){  
+     				  return function(){
+     				  		var oScript = document.createElement('script');
+							oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+i+'&max-results=10';
+							document.body.appendChild(oScript);
+     				  }
+   			 })(i)  
+			}  
+	
+
+}
+window.onload = function() {
+	
+	var oQ = document.getElementById('q');
+	var oBtn = document.getElementById('btn');
+	var oMsg = document.getElementById('msg');
+	var oList = document.getElementById('list');
+	var oPage = document.getElementById('page');
+	var ipage = 1;
+
+	
+	oBtn.onclick = function(){
+		if(oQ.value!=''){
+			var oScript = document.createElement('script');
+			oScript.src = 'http://api.douban.com/book/subjects?q='+oQ.value+'&alt=xd&callback=fn1&start-index='+ipage+'&max-results=10';
+			document.body.appendChild(oScript);
+			
+			
+		}
+		
+	};
+	
+	
+	
+}
+
+</script>
+
+	<body>
+		<input type="text" id="q"  />
+		<input type="button" value="搜索" id="btn"/>
+		<p id="msg"></p>
+		<hr />
+		<div id="list">
+			
+		</div>
+		<div id="page">
+			
+		</div>
+	</body>
+</html>

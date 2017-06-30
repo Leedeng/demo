@@ -1,0 +1,11 @@
+	.wrap{
+			width: 900px;
+			border: 1px solid #000000;
+			font: 14px/28px "宋体";
+			color: black;
+			text-indent: 2em;
+			/*column-width: 250px;*/
+			/*column-count: 4;
+			column-gap: 20px;
+			column-rule: 1px solid #000000;*/
+		}
